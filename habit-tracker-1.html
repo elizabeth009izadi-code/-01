@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مسیر ۹۰ روزه من</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0d0d14;
+    --surface: #13131f;
+    --card: #1a1a2e;
+    --border: #2a2a45;
+    --accent: #c9a96e;
+    --accent2: #8b6bb1;
+    --accent3: #5ba4a4;
+    --text: #e8e4dc;
+    --muted: #7a7694;
+    --success: #6bba8e;
+    --gold: #f0c060;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Vazirmatn', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grain texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.6;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    padding: 3rem 1rem 2rem;
+    position: relative;
+  }
+
+  header::after {
+    content: '';
+    display: block;
+    width: 80px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    margin: 1.5rem auto 0;
+  }
+
+  .crown {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 0.5rem;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+
+  h1 {
+    font-size: clamp(1.8rem, 5vw, 3rem);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--gold) 50%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    margin-top: 0.5rem;
+    font-size: 0.95rem;
+    font-weight: 300;
+  }
+
+  /* Stats bar */
+  .stats-bar {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 1.5rem 1rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .stat-pill {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 0.6rem 1.4rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    transition: all 0.3s;
+  }
+
+  .stat-pill span:first-child { font-size: 1.1rem; }
+  .stat-num { font-weight: 700; color: var(--accent); }
+
+  /* Main layout */
+  main {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 1rem 3rem;
+  }
+
+  /* Day selector */
+  .day-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .day-nav button {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .day-nav button:hover { background: var(--border); border-color: var(--accent); }
+
+  .day-display {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 0.8rem 2rem;
+    text-align: center;
+    min-width: 200px;
+  }
+
+  .day-num {
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .day-label { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+
+  /* Habits grid */
+  .habits-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+  }
+
+  .habit-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  .habit-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .habit-card.done {
+    border-color: var(--success);
+    background: linear-gradient(135deg, #1a2e25 0%, var(--card) 100%);
+    transform: scale(1.01);
+  }
+
+  .habit-card.done::before {
+    background: radial-gradient(circle at 20% 50%, rgba(107, 186, 142, 0.08) 0%, transparent 70%);
+    opacity: 1;
+  }
+
+  .habit-card:active { transform: scale(0.98); }
+
+  .habit-emoji {
+    font-size: 1.8rem;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface);
+    border-radius: 12px;
+    transition: all 0.3s;
+  }
+
+  .habit-card.done .habit-emoji {
+    background: rgba(107, 186, 142, 0.15);
+  }
+
+  .habit-info { flex: 1; }
+  .habit-name { font-size: 0.95rem; font-weight: 500; }
+  .habit-sub { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+
+  .check-circle {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    font-size: 0.9rem;
+  }
+
+  .habit-card.done .check-circle {
+    background: var(--success);
+    border-color: var(--success);
+    color: white;
+    transform: scale(1.1);
+  }
+
+  /* Save button */
+  .save-btn {
+    display: block;
+    width: 100%;
+    max-width: 360px;
+    margin: 0 auto 3rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, var(--accent), var(--gold));
+    color: #0d0d14;
+    border: none;
+    border-radius: 16px;
+    font-family: 'Vazirmatn', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+    letter-spacing: 0.02em;
+  }
+
+  .save-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(201, 169, 110, 0.35); }
+  .save-btn:active { transform: translateY(0); }
+
+  /* Section title */
+  .section-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--text);
+  }
+
+  .section-title span { color: var(--accent); }
+
+  /* Charts */
+  .charts-section { margin-top: 1rem; }
+
+  .chart-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 5px;
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 0.65rem;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-family: 'Vazirmatn', sans-serif;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border-radius: 10px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+  }
+
+  .tab-btn.active {
+    background: var(--border);
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .chart-panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 1.5rem;
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .chart-panel.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .chart-wrapper {
+    position: relative;
+    height: 320px;
+  }
+
+  /* Progress ring for today */
+  .today-ring {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+  }
+
+  .ring-container {
+    position: relative;
+    width: 140px;
+    height: 140px;
+  }
+
+  .ring-svg { transform: rotate(-90deg); }
+
+  .ring-bg { fill: none; stroke: var(--border); stroke-width: 8; }
+  .ring-fill {
+    fill: none;
+    stroke: url(#ringGrad);
+    stroke-width: 8;
+    stroke-linecap: round;
+    stroke-dasharray: 345.6;
+    stroke-dashoffset: 345.6;
+    transition: stroke-dashoffset 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .ring-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ring-pct { font-size: 1.8rem; font-weight: 900; color: var(--accent); line-height: 1; }
+  .ring-label { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
+
+  /* Calendar heatmap */
+  .heatmap {
+    margin-top: 2rem;
+  }
+
+  .heatmap-title {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 0.8rem;
+    text-align: center;
+  }
+
+  .heatmap-grid {
+    display: grid;
+    grid-template-columns: repeat(18, 1fr);
+    gap: 3px;
+  }
+
+  .heatmap-cell {
+    aspect-ratio: 1;
+    border-radius: 3px;
+    background: var(--border);
+    transition: all 0.2s;
+    cursor: pointer;
+    position: relative;
+  }
+
+  .heatmap-cell:hover::after {
+    content: attr(data-day);
+    position: absolute;
+    bottom: 110%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 0.7rem;
+    padding: 3px 6px;
+    border-radius: 6px;
+    white-space: nowrap;
+    z-index: 10;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--success);
+    color: white;
+    padding: 0.8rem 2rem;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 1000;
+    white-space: nowrap;
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .habits-grid { grid-template-columns: 1fr; }
+    .heatmap-grid { grid-template-columns: repeat(10, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="crown">👑</span>
+  <h1>مسیر ۹۰ روزه من</h1>
+  <p class="subtitle">هر روز یک قدم — هر قدم یک تحول</p>
+</header>
+
+<div class="stats-bar">
+  <div class="stat-pill">🔥 <span>استریک:</span> <span class="stat-num" id="streakNum">0</span> <span>روز</span></div>
+  <div class="stat-pill">✅ <span>کل:</span> <span class="stat-num" id="totalDone">0</span> <span>عادت</span></div>
+  <div class="stat-pill">📅 <span>روز:</span> <span class="stat-num" id="dayCount">1</span> <span>از ۹۰</span></div>
+  <div class="stat-pill">⭐ <span>بهترین روز:</span> <span class="stat-num" id="bestDay">0</span></div>
+</div>
+
+<main>
+  <!-- Today's ring -->
+  <div class="today-ring">
+    <div class="ring-container">
+      <svg class="ring-svg" width="140" height="140" viewBox="0 0 140 140">
+        <defs>
+          <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#c9a96e"/>
+            <stop offset="100%" stop-color="#f0c060"/>
+          </linearGradient>
+        </defs>
+        <circle class="ring-bg" cx="70" cy="70" r="55"/>
+        <circle class="ring-fill" id="ringFill" cx="70" cy="70" r="55"/>
+      </svg>
+      <div class="ring-text">
+        <div class="ring-pct" id="ringPct">0%</div>
+        <div class="ring-label">امروز</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Day navigation -->
+  <div class="day-nav">
+    <button onclick="changeDay(-1)">‹</button>
+    <div class="day-display">
+      <div class="day-num" id="currentDayNum">روز ۱</div>
+      <div class="day-label" id="currentDayLabel">امروز</div>
+    </div>
+    <button onclick="changeDay(1)">›</button>
+  </div>
+
+  <!-- Habits -->
+  <div class="habits-grid" id="habitsGrid"></div>
+
+  <!-- Save button -->
+  <button class="save-btn" onclick="saveDay()">💾 ذخیره روز</button>
+
+  <!-- Charts -->
+  <div class="charts-section">
+    <div class="section-title"><span>📊</span> نمودار پیشرفت</div>
+
+    <div class="chart-tabs">
+      <button class="tab-btn active" onclick="switchTab('bar')">📊 ستونی</button>
+      <button class="tab-btn" onclick="switchTab('line')">📈 خطی</button>
+      <button class="tab-btn" onclick="switchTab('pie')">🥧 دایره‌ای</button>
+    </div>
+
+    <div class="chart-panel active" id="barPanel">
+      <div class="chart-wrapper"><canvas id="barChart"></canvas></div>
+    </div>
+    <div class="chart-panel" id="linePanel">
+      <div class="chart-wrapper"><canvas id="lineChart"></canvas></div>
+    </div>
+    <div class="chart-panel" id="piePanel">
+      <div class="chart-wrapper"><canvas id="pieChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Heatmap -->
+  <div class="heatmap">
+    <div class="heatmap-title">نقشه حرارتی ۹۰ روز</div>
+    <div class="heatmap-grid" id="heatmapGrid"></div>
+    <div style="display:flex;gap:0.5rem;align-items:center;justify-content:center;margin-top:0.8rem;font-size:0.75rem;color:var(--muted)">
+      <span>کم</span>
+      <div style="width:12px;height:12px;border-radius:2px;background:var(--border)"></div>
+      <div style="width:12px;height:12px;border-radius:2px;background:#3a5a4a"></div>
+      <div style="width:12px;height:12px;border-radius:2px;background:#4a8a6a"></div>
+      <div style="width:12px;height:12px;border-radius:2px;background:#6bba8e"></div>
+      <span>زیاد</span>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const HABITS = [
+  { id: 'wake', emoji: '⏰', name: 'بیداری ۶:۳۰', sub: 'صبح زود بیدار شدن' },
+  { id: 'skinday', emoji: '✨', name: 'روتین پوستی صبح', sub: 'مراقبت از پوست' },
+  { id: 'meditate', emoji: '🧘‍♀️', name: 'مدیتیشن', sub: 'آرامش ذهن' },
+  { id: 'study', emoji: '📚', name: 'بیشتر از ۵ ساعت درس', sub: 'تمرکز و یادگیری' },
+  { id: 'move', emoji: '🏃‍♀️', name: 'ورزش / یوگا / رقص', sub: 'حرکت بدن' },
+  { id: 'read', emoji: '📖', name: '۱۰ صفحه کتاب', sub: 'رشد ذهنی' },
+  { id: 'hard', emoji: '💪', name: 'یه کار سخت', sub: 'از ناراحتی فرار نکردن' },
+  { id: 'journal', emoji: '📓', name: 'ژورنال‌نویسی', sub: 'بازتاب روز' },
+  { id: 'water', emoji: '💧', name: '۸ لیوان آب', sub: 'هیدراتاسیون' },
+  { id: 'nophone', emoji: '📵', name: 'نزدن (بدون حواس‌پرتی)', sub: 'فضای ذهنی بیشتر' },
+  { id: 'english', emoji: '🇬🇧', name: 'زبان انگلیسی', sub: 'یادگیری روزانه' },
+  { id: 'skinnight', emoji: '🌙', name: 'روتین پوستی شب', sub: 'مراقبت شبانه' },
+];
+
+const TOTAL_DAYS = 90;
+let currentDay = 1;
+let data = {}; // { day: [habitId, ...] }
+let charts = {};
+
+// Load from localStorage
+function loadData() {
+  try {
+    const saved = localStorage.getItem('habit90_data');
+    if (saved) data = JSON.parse(saved);
+  } catch(e) { data = {}; }
+}
+
+function saveData() {
+  localStorage.setItem('habit90_data', JSON.stringify(data));
+}
+
+function getDayData(day) {
+  return data[day] || [];
+}
+
+function setDayData(day, habits) {
+  data[day] = habits;
+  saveData();
+}
+
+// Render habits
+function renderHabits() {
+  const grid = document.getElementById('habitsGrid');
+  const done = getDayData(currentDay);
+  grid.innerHTML = HABITS.map(h => `
+    <div class="habit-card ${done.includes(h.id) ? 'done' : ''}" onclick="toggleHabit('${h.id}')">
+      <div class="habit-emoji">${h.emoji}</div>
+      <div class="habit-info">
+        <div class="habit-name">${h.name}</div>
+        <div class="habit-sub">${h.sub}</div>
+      </div>
+      <div class="check-circle">${done.includes(h.id) ? '✓' : ''}</div>
+    </div>
+  `).join('');
+  updateRing();
+}
+
+function toggleHabit(id) {
+  let done = [...getDayData(currentDay)];
+  const idx = done.indexOf(id);
+  if (idx >= 0) done.splice(idx, 1);
+  else done.push(id);
+  setDayData(currentDay, done);
+  renderHabits();
+  updateStats();
+  updateCharts();
+  updateHeatmap();
+}
+
+function updateRing() {
+  const done = getDayData(currentDay);
+  const pct = Math.round((done.length / HABITS.length) * 100);
+  const circumference = 2 * Math.PI * 55;
+  const offset = circumference - (pct / 100) * circumference;
+  document.getElementById('ringFill').style.strokeDashoffset = offset;
+  document.getElementById('ringPct').textContent = pct + '%';
+}
+
+function changeDay(dir) {
+  currentDay = Math.max(1, Math.min(TOTAL_DAYS, currentDay + dir));
+  document.getElementById('currentDayNum').textContent = 'روز ' + currentDay;
+  document.getElementById('currentDayLabel').textContent = currentDay === 1 ? 'امروز' : `روز ${currentDay}`;
+  document.getElementById('dayCount').textContent = currentDay;
+  renderHabits();
+  updateCharts();
+}
+
+function saveDay() {
+  showToast('✅ روز ' + currentDay + ' ذخیره شد!');
+  updateStats();
+}
+
+function updateStats() {
+  // Streak
+  let streak = 0;
+  for (let d = currentDay; d >= 1; d--) {
+    const done = getDayData(d);
+    if (done.length >= HABITS.length * 0.5) streak++;
+    else break;
+  }
+  document.getElementById('streakNum').textContent = streak;
+
+  // Total done
+  let total = 0;
+  for (let d = 1; d <= TOTAL_DAYS; d++) total += getDayData(d).length;
+  document.getElementById('totalDone').textContent = total;
+
+  // Best day
+  let best = 0;
+  for (let d = 1; d <= TOTAL_DAYS; d++) best = Math.max(best, getDayData(d).length);
+  document.getElementById('bestDay').textContent = best;
+}
+
+// Charts
+Chart.defaults.color = '#7a7694';
+Chart.defaults.font.family = 'Vazirmatn';
+
+function getChartData() {
+  // Last 30 days relative to currentDay
+  const labels = [];
+  const values = [];
+  const start = Math.max(1, currentDay - 29);
+  for (let d = start; d <= currentDay; d++) {
+    labels.push('روز ' + d);
+    values.push(getDayData(d).length);
+  }
+  return { labels, values };
+}
+
+function initCharts() {
+  const { labels, values } = getChartData();
+  const commonOpts = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+  };
+
+  // Bar
+  charts.bar = new Chart(document.getElementById('barChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: values.map(v => {
+          const pct = v / HABITS.length;
+          if (pct >= 0.8) return 'rgba(107,186,142,0.8)';
+          if (pct >= 0.5) return 'rgba(201,169,110,0.8)';
+          return 'rgba(139,107,177,0.5)';
+        }),
+        borderRadius: 8,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      ...commonOpts,
+      scales: {
+        y: { max: HABITS.length, grid: { color: '#2a2a45' }, ticks: { stepSize: 3 } },
+        x: { grid: { display: false }, ticks: { maxTicksLimit: 10 } }
+      },
+      plugins: {
+        ...commonOpts.plugins,
+        tooltip: { callbacks: { label: ctx => `${ctx.raw} از ${HABITS.length} عادت` } }
+      }
+    }
+  });
+
+  // Line
+  charts.line = new Chart(document.getElementById('lineChart'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        borderColor: '#c9a96e',
+        backgroundColor: 'rgba(201,169,110,0.08)',
+        borderWidth: 2.5,
+        pointBackgroundColor: '#c9a96e',
+        pointRadius: values.map((v,i) => i === values.length-1 ? 6 : 3),
+        tension: 0.4,
+        fill: true,
+      }]
+    },
+    options: {
+      ...commonOpts,
+      scales: {
+        y: { max: HABITS.length, grid: { color: '#2a2a45' }, ticks: { stepSize: 3 } },
+        x: { grid: { display: false }, ticks: { maxTicksLimit: 10 } }
+      }
+    }
+  });
+
+  // Pie — per-habit completion
+  const habitTotals = HABITS.map(h => {
+    let count = 0;
+    for (let d = 1; d <= TOTAL_DAYS; d++) {
+      if (getDayData(d).includes(h.id)) count++;
+    }
+    return count;
+  });
+
+  const pieColors = [
+    '#c9a96e','#8b6bb1','#5ba4a4','#6bba8e','#f0c060','#e07a5f',
+    '#3d405b','#81b29a','#f2cc8f','#b2b5ea','#d4a5a5','#a8c5b0'
+  ];
+
+  charts.pie = new Chart(document.getElementById('pieChart'), {
+    type: 'doughnut',
+    data: {
+      labels: HABITS.map(h => h.name),
+      datasets: [{
+        data: habitTotals,
+        backgroundColor: pieColors,
+        borderColor: '#13131f',
+        borderWidth: 3,
+      }]
+    },
+    options: {
+      ...commonOpts,
+      cutout: '55%',
+      plugins: {
+        legend: {
+          display: true,
+          position: 'bottom',
+          labels: { boxWidth: 12, padding: 12, font: { size: 11 } }
+        },
+        tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.raw} روز` } }
+      }
+    }
+  });
+}
+
+function updateCharts() {
+  const { labels, values } = getChartData();
+
+  if (charts.bar) {
+    charts.bar.data.labels = labels;
+    charts.bar.data.datasets[0].data = values;
+    charts.bar.data.datasets[0].backgroundColor = values.map(v => {
+      const pct = v / HABITS.length;
+      if (pct >= 0.8) return 'rgba(107,186,142,0.8)';
+      if (pct >= 0.5) return 'rgba(201,169,110,0.8)';
+      return 'rgba(139,107,177,0.5)';
+    });
+    charts.bar.update();
+  }
+
+  if (charts.line) {
+    charts.line.data.labels = labels;
+    charts.line.data.datasets[0].data = values;
+    charts.line.update();
+  }
+
+  if (charts.pie) {
+    const habitTotals = HABITS.map(h => {
+      let count = 0;
+      for (let d = 1; d <= TOTAL_DAYS; d++) {
+        if (getDayData(d).includes(h.id)) count++;
+      }
+      return count;
+    });
+    charts.pie.data.datasets[0].data = habitTotals;
+    charts.pie.update();
+  }
+}
+
+function switchTab(type) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.chart-panel').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById(type + 'Panel').classList.add('active');
+}
+
+// Heatmap
+function updateHeatmap() {
+  const grid = document.getElementById('heatmapGrid');
+  grid.innerHTML = '';
+  for (let d = 1; d <= TOTAL_DAYS; d++) {
+    const done = getDayData(d).length;
+    const pct = done / HABITS.length;
+    let bg = 'var(--border)';
+    if (pct > 0 && pct < 0.33) bg = '#3a5a4a';
+    else if (pct >= 0.33 && pct < 0.66) bg = '#4a8a6a';
+    else if (pct >= 0.66) bg = '#6bba8e';
+    const cell = document.createElement('div');
+    cell.className = 'heatmap-cell';
+    cell.style.background = bg;
+    cell.setAttribute('data-day', `روز ${d}: ${done}/${HABITS.length}`);
+    cell.onclick = () => { currentDay = d; changeDay(0); };
+    grid.appendChild(cell);
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Init
+loadData();
+renderHabits();
+updateStats();
+updateHeatmap();
+setTimeout(initCharts, 100);
+</script>
+</body>
+</html>
